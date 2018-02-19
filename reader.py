@@ -53,15 +53,17 @@ class VoronoiReader(Reader):
         # Get nearest neighbor for each pixel. The indices follow the sequence in the self.LEDs list.
         # NOTE this is slow!
         _, nearest_led = tree.query([[y,x] for y in range(self.screen_y_pixels) 
-                                           for x in range(self.screen_x_pixels)]) 
+                                           for x in range(self.screen_x_pixels)],
+                                           k=self.num_neighbors) 
 
-        nearest_led = nearest_led.reshape((self.screen_y_pixels, self.screen_x_pixels))
+        nearest_led = nearest_led.reshape((self.screen_y_pixels, self.screen_x_pixels, self.num_neighbors))
 
         return nearest_led
 
     def collect_LED_RGBs(self, image):
 
-        return { self.LED_map[led_number]: image[self.nearest_LED_mask == led_number] for led_number in range(self.num_LEDs) }
+        # NOTE risky!
+        return { self.LED_map[led_number]: np.vstack([image[self.nearest_LED_mask[:,:,n] == led_number] for n in range(self.num_neighbors)]) for led_number in range(self.num_LEDs) }
 
     def run(self):
 
