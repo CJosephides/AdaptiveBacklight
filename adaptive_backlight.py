@@ -30,7 +30,7 @@ def test_main():
     image_path = '/home/christos/AdaptiveBacklight/screenshot.bmp'
 
     print("Initializing Voronoi segments.")
-    reader = VoronoiReader(image_path, LEDs, num_neighbors=3)
+    reader = VoronoiReader(image_path, LEDs, num_neighbors=2)
     analyzer = MeanAnalyzer()
     controller = MatplotlibController()
     viewer = MatplotlibViewer(ylim=[SCREEN_HEIGHT+10, 0-10], xlim=[0-10,SCREEN_WIDTH+10])
@@ -89,5 +89,6 @@ class LED():
         return (pixel_y, pixel_x)
 
 if __name__ == '__main__':
+
 
     test_main()
