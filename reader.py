@@ -6,7 +6,7 @@ class Reader():
 
     def __init__(self, image_path):
         self.image_path = image_path
-        self.y_pixels, self.x_pixels = self.get_screen_pixels()
+        self.screen_y_pixels, self.screen_x_pixels = self.get_screen_pixels()
 
     def read(self):
         return imread(self.image_path)
@@ -20,12 +20,14 @@ class Reader():
 
 class VoronoiReader(Reader):
 
-    def __init__(self, image_path, LEDs):
+    def __init__(self, image_path, LEDs, num_neighbors=1):
+
         super(VoronoiReader, self).__init__(image_path)
         
         self.LEDs = LEDs
         self.num_LEDs = len(self.LEDs)
         self.LED_map = self.make_LED_map()
+        self.num_neighbors = num_neighbors
         self.nearest_LED_mask = self.make_LED_mask()
 
     def make_LED_map(self):
@@ -34,7 +36,7 @@ class VoronoiReader(Reader):
 
     def make_LED_mask(self):
         """
-        Returns an self.y_pixels X self.x_pixels numpy array. The number at each index is the nearest LED neighbor of the pixel at that index. 
+        Returns a (screen_y_pixels, screen_x_pixels, num_neighbrs) numpy array. The number at each index is the nearest LED neighbor of the pixel at that index. 
 
         Note that the LED number follows the order of the LEDs in the self.LEDs list (*not* the actual numbers of the LED objects).
         """
@@ -42,20 +44,18 @@ class VoronoiReader(Reader):
         from scipy.spatial import KDTree
 
         # Construct a K-d tree with LED pixel positions adjusted to our image size.
-        # NOTE KDTree takes pairs of (x,y) coordinates. We are storing pairs of (y,x) LED coordinates.
-        # NOTE I don't think it matters, as long as we are consistent. I should refactor this.
         LED_pixel_positions = []
         for led in self.LEDs:
-            y, x = led.pixel_position(self.y_pixels, self.x_pixels)            
-            LED_pixel_positions.append((x, y))
+            y, x = led.pixel_position(self.screen_y_pixels, self.screen_x_pixels)            
+            LED_pixel_positions.append((y, x))
         tree = KDTree(LED_pixel_positions)
 
         # Get nearest neighbor for each pixel. The indices follow the sequence in the self.LEDs list.
         # NOTE this is slow!
-        _, nearest_led = tree.query([[x,y] for y in range(self.y_pixels) 
-                                           for x in range(self.x_pixels)]) 
+        _, nearest_led = tree.query([[y,x] for y in range(self.screen_y_pixels) 
+                                           for x in range(self.screen_x_pixels)]) 
 
-        nearest_led = nearest_led.reshape((self.y_pixels, self.x_pixels))
+        nearest_led = nearest_led.reshape((self.screen_y_pixels, self.screen_x_pixels))
 
         return nearest_led
 

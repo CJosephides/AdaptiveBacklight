@@ -22,10 +22,7 @@ def test_main():
     yy = np.linspace(0, SCREEN_HEIGHT, 15)
 
     LEDs = []
-    # LED_positions = [(yy[0], x) for x in xx] + [(yy[-1], x) for x in xx] + [(y, xx[0]) for y in yy[1:-1]] + [(y, xx[-1]) for y in yy[1:-1]]
-
-    # With offset, to compensate for widescreen monitors.
-    LED_positions = [(yy[0], x) for x in xx] + [(yy[-1], x) for x in xx] + [(y, xx[0]+50) for y in yy[1:-1]] + [(y, xx[-1]-50) for y in yy[1:-1]]
+    LED_positions = [(yy[0], x) for x in xx] + [(yy[-1], x) for x in xx] + [(y, xx[0]) for y in yy[1:-1]] + [(y, xx[-1]) for y in yy[1:-1]]
 
     for i in range(len(LED_positions)):
         LEDs.append(LED(i, LED_positions[i][0], LED_positions[i][1], screen_height=290, screen_width=505))
