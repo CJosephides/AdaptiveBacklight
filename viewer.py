@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-class Viewer():
+class Viewer(object):
 
     def __init__(self):
         pass
@@ -10,7 +10,7 @@ class Viewer():
 class MatplotlibViewer(Viewer):
 
     def __init__(self, ylim, xlim):
-        
+
         plt.ion()
 
         self.xlim = xlim
@@ -31,6 +31,6 @@ class MatplotlibViewer(Viewer):
         plt.pause(0.1)
 
 
-    
+
 
 

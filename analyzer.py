@@ -1,7 +1,7 @@
 import numpy as np
 
 
-class Analyzer():
+class Analyzer(object):
 
     def __init__(self):
         super(Analyzer, self).__init__()

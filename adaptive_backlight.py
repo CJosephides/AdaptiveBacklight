@@ -1,10 +1,13 @@
 import time
+import numpy as np
 from led import LED
+from reader import HTTPReader
 from collector import VoronoiCollector
 from analyzer import MedianAnalyzer, MeanAnalyzer
-from controller import MatplotlibController
-from viewer import MatplotlibViewer
-from neopixel import Color, Adafruit_NeoPixel
+from controller import WS281xController
+#from controller import MatplotlibController
+#from viewer import MatplotlibViewer
+from neopixel import Color, Adafruit_NeoPixel, ws
 
 
 # LED and monitor configuration
@@ -14,14 +17,21 @@ from neopixel import Color, Adafruit_NeoPixel
 SCREEN_WIDTH = 505
 SCREEN_HEIGHT = 290
 
+# (Effective) screen resolution in pixels.
+SCREEN_X_PIXELS = 640
+SCREEN_Y_PIXELS = 360
+
 # LED numbering and positioning.
 LEDs = []
 
-# test
+# Test: place LEDs
+xx = np.linspace(0, SCREEN_WIDTH, 25)
+yy = np.linspace(0, SCREEN_HEIGHT, 15)
+
 LED_positions = [(yy[0], x) for x in xx] + [(yy[-1], x) for x in xx] + [(y, xx[0]) for y in yy[1:-1]] + [(y, xx[-1]) for y in yy[1:-1]]
 
 for i in range(len(LED_positions)):
-        LEDs.append(LED(i, LED_positions[i][0], LED_positions[i][1], screen_height=290, screen_width=505))
+        LEDs.append(LED(i, LED_positions[i][0], LED_positions[i][1], screen_height=SCREEN_HEIGHT, screen_width=SCREEN_WIDTH))
 
 # Configuration
 # -------------
@@ -29,7 +39,8 @@ for i in range(len(LED_positions)):
 READER = HTTPReader
 READER_PARAMS = {'address': 'http://192.168.1.177:8080?width=640&height=360'}
 COLLECTOR = VoronoiCollector
-COLLECTOR_PARAMS = {'LEDs': LEDs, 'num_neighbors': 2}
+COLLECTOR_PARAMS = {'LEDs': LEDs, 'num_neighbors': 2,
+                    'screen_x_pixels': SCREEN_X_PIXELS, 'screen_y_pixels': SCREEN_Y_PIXELS}
 ANALYZER = MeanAnalyzer
 ANALYZER_PARAMS = {}
 CONTROLLER = WS281xController
@@ -79,7 +90,7 @@ def main():
 #
 #    for i in range(len(LED_positions)):
 #        LEDs.append(LED(i, LED_positions[i][0], LED_positions[i][1], screen_height=290, screen_width=505))
-#    
+#
 #    image_path = '/home/christos/AdaptiveBacklight/screenshot.bmp'
 #
 #    print("Initializing Voronoi segments.")
@@ -97,7 +108,7 @@ def main():
 #        print("Analyzing")
 #        LED_RGB = analyzer.run(LED_RGBs)
 #        print("Controlling")
-#        X, Y, C = controller.run(LED_RGB) 
+#        X, Y, C = controller.run(LED_RGB)
 #        print("Viewing")
 #        viewer.update(X, Y, C)
 

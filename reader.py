@@ -3,16 +3,16 @@ from io import BytesIO
 from scipy.misc import imread
 
 
-class Reader():
+class Reader(object):
 
     def __init__(self):
-        super(Reader, self).__init__() 
+        super(Reader, self).__init__()
 
     def read(self):
         raise NotImplementedError('Must implement read method.')
 
 
-def FileReader(Reader):
+class FileReader(Reader):
 
     def __init__(self, image_path):
         self.image_path = image_path
@@ -23,7 +23,7 @@ def FileReader(Reader):
         return image
 
 
-def HTTPReader(Reader):
+class HTTPReader(Reader):
 
     def __init__(self, address):
         self.address = address

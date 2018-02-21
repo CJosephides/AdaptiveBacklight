@@ -2,9 +2,9 @@ import time
 import sys
 import signal
 import numpy as np
-from neopixel import Color, Adafruit_NeoPixel
+from neopixel import Color, Adafruit_NeoPixel, ws
 
-class Controller():
+class Controller(object):
 
     def __init__(self):
         super(Controller, self).__init__()
@@ -60,7 +60,7 @@ class WS281xController(Controller):
 
     def control(self, LED_RGB):
         for led in LED_RGB:
-            strip.setPixelColor(led.number, Color(tuple(LED_RGB[led]))) 
+            strip.setPixelColor(led.number, Color(tuple(LED_RGB[led])))
             strip.show()
 
     def signal_handler(self, signal, frame):
