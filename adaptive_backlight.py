@@ -27,7 +27,7 @@ for i in range(len(LED_positions)):
 # -------------
 
 READER = HTTPReader
-READER_PARAMS = {'address': 'http://192.168.1.177:8080'}
+READER_PARAMS = {'address': 'http://192.168.1.177:8080?width=640&height=360'}
 COLLECTOR = VoronoiCollector
 COLLECTOR_PARAMS = {'LEDs': LEDs, 'num_neighbors': 2}
 ANALYZER = MeanAnalyzer

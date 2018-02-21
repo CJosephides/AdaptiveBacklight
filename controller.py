@@ -45,12 +45,12 @@ class WS281xController(Controller):
     LED_CHANNEL = 0
     LED_STRIP = ws.WS2811_STRIP_GRB
 
-    def __init__(self, LEDs, WS2812_params):
+    def __init__(self, LEDs, WS2812_config):
 
         # Strip setup.
         self.LEDs = LEDs
         self.num_LEDs = len(self.LEDs)
-        self.strip = Adafruit_NeoPixel(self.num_LEDs, LED_PIN, LED_FREQ_HZ, LED_DMA, LED_INVERT, LED_BRIGHTNESS, LED_CHANNEL, LED_STRIP)
+        self.strip = Adafruit_NeoPixel(**WS2812_config)
         strip.begin()
 
         # Signal setup.
