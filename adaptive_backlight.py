@@ -1,94 +1,107 @@
 import time
-import os
-import argparse
-from subprocess import call
-import numpy as np
-
-from reader import VoronoiReader
+from led import LED
+from collector import VoronoiCollector
 from analyzer import MedianAnalyzer, MeanAnalyzer
 from controller import MatplotlibController
 from viewer import MatplotlibViewer
+from neopixel import Color, Adafruit_NeoPixel
 
-def parse_arguments():
-    pass
 
-def test_main():
+# LED and monitor configuration
+# -----------------------------
 
-    SCREEN_HEIGHT = 290
-    SCREEN_WIDTH = 505
+# Physical screen dimensions in millimeters.
+SCREEN_WIDTH = 505
+SCREEN_HEIGHT = 290
 
-    # Place LEDs
-    xx = np.linspace(0, SCREEN_WIDTH, 25)
-    yy = np.linspace(0, SCREEN_HEIGHT, 15)
+# LED numbering and positioning.
+LEDs = []
 
-    LEDs = []
-    LED_positions = [(yy[0], x) for x in xx] + [(yy[-1], x) for x in xx] + [(y, xx[0]) for y in yy[1:-1]] + [(y, xx[-1]) for y in yy[1:-1]]
+# test
+LED_positions = [(yy[0], x) for x in xx] + [(yy[-1], x) for x in xx] + [(y, xx[0]) for y in yy[1:-1]] + [(y, xx[-1]) for y in yy[1:-1]]
 
-    for i in range(len(LED_positions)):
+for i in range(len(LED_positions)):
         LEDs.append(LED(i, LED_positions[i][0], LED_positions[i][1], screen_height=290, screen_width=505))
-    
-    image_path = '/home/christos/AdaptiveBacklight/screenshot.bmp'
 
-    print("Initializing Voronoi segments.")
-    reader = VoronoiReader(image_path, LEDs, num_neighbors=2)
-    analyzer = MeanAnalyzer()
-    controller = MatplotlibController()
-    viewer = MatplotlibViewer(ylim=[SCREEN_HEIGHT+10, 0-10], xlim=[0-10,SCREEN_WIDTH+10])
+# Configuration
+# -------------
 
-    print("Starting")
+READER = HTTPReader
+READER_PARAMS = {'address': 'http://192.168.1.177:8080'}
+COLLECTOR = VoronoiCollector
+COLLECTOR_PARAMS = {'LEDs': LEDs, 'num_neighbors': 2}
+ANALYZER = MeanAnalyzer
+ANALYZER_PARAMS = {}
+CONTROLLER = WS281xController
+CONTROLLER_PARAMS = {'LEDs': LEDs, 'WS281_config': {
+    'LED_COUNT': len(LEDs),
+    'LED_PIN' : 18,
+    'LED_FREQ_HZ' : 800000,
+    'LED_DMA' : 10,
+    'LED_BRIGHTNESS' : 100,
+    'LED_INVERT' : False,
+    'LED_CHANNEL' : 0,
+    'LED_STRIP' : ws.WS2811_STRIP_GRB
+    }}
+
+UPDATE_PAUSE = 1  # seconds
+
+# Main loop
+# ---------
+
+def main():
+
+    # Initialization.
+    print("Initializing")
+    reader = READER(**READER_PARAMS)
+    collector = COLLECTOR(**COLLECTOR_PARAMS)
+    analyzer = ANALYZER(**ANALYZER_PARAMS)
+    controller = CONTROLLER(**CONTROLLER_PARAMS)
+    print("Running. Ctrl+C to terminate.")
     while True:
-        print("Screenshot")
-        call(["import", "-window", "root", "-resize", "640x360", "screenshot.bmp"])
-        print("Reading")
-        LED_RGBs = reader.run()
-        print("Analyzing")
-        LED_RGB = analyzer.run(LED_RGBs)
-        print("Controlling")
-        X, Y, C = controller.run(LED_RGB) 
-        print("Viewing")
-        viewer.update(X, Y, C)
+        image = reader.read()
+        LED_RGB_collection = collector.collect(image)
+        LED_RGB = analyzer.analyze(LED_RGB_collection)
+        controller.control(LED_RGB)
+        time.sleep(UPDATE_PAUSE)
 
+#def test_main():
+#
+#    SCREEN_HEIGHT = 290
+#    SCREEN_WIDTH = 505
+#
+#    # Place LEDs
+#    xx = np.linspace(0, SCREEN_WIDTH, 25)
+#    yy = np.linspace(0, SCREEN_HEIGHT, 15)
+#
+#    LEDs = []
+#    LED_positions = [(yy[0], x) for x in xx] + [(yy[-1], x) for x in xx] + [(y, xx[0]) for y in yy[1:-1]] + [(y, xx[-1]) for y in yy[1:-1]]
+#
+#    for i in range(len(LED_positions)):
+#        LEDs.append(LED(i, LED_positions[i][0], LED_positions[i][1], screen_height=290, screen_width=505))
+#    
+#    image_path = '/home/christos/AdaptiveBacklight/screenshot.bmp'
+#
+#    print("Initializing Voronoi segments.")
+#    reader = VoronoiReader(image_path, LEDs, num_neighbors=2)
+#    analyzer = MeanAnalyzer()
+#    controller = MatplotlibController()
+#    viewer = MatplotlibViewer(ylim=[SCREEN_HEIGHT+10, 0-10], xlim=[0-10,SCREEN_WIDTH+10])
+#
+#    print("Starting")
+#    while True:
+#        print("Screenshot")
+#        call(["import", "-window", "root", "-resize", "640x360", "screenshot.bmp"])
+#        print("Reading")
+#        LED_RGBs = reader.run()
+#        print("Analyzing")
+#        LED_RGB = analyzer.run(LED_RGBs)
+#        print("Controlling")
+#        X, Y, C = controller.run(LED_RGB) 
+#        print("Viewing")
+#        viewer.update(X, Y, C)
 
-class LED():
-
-    def __init__(self, number, y, x, screen_height, screen_width):
-        """
-
-        Arguments
-        ---------
-
-        number: int
-                The number of the LED in the strip.
-                The first LED in the strip is 0, the second is 1, etc...
-
-        y, x:  float
-                LED vertical and horizontal position in millimeters.
-                Origin is at the top-left corner of the monitor.
-
-        screen_height, screen_width:    float
-                                        Screen height and width in millimeters.
-        """
-        self.number = number
-        self.y = y
-        self.x = x
-        self.screen_height = screen_height
-        self.screen_width = screen_width
-
-    @property
-    def coordinates(self):
-        return((self.y, self.x))
-
-    def pixel_position(self, y_pixels, x_pixels):
-        """
-        Return the pixel coordinates corresponding to the LED in a screen with pixel_height vertical pixels and pixel_width horizontal pixels.
-        """
-
-        pixel_y = int(y_pixels * (self.y / self.screen_height))
-        pixel_x = int(x_pixels * (self.x / self.screen_width))
-
-        return (pixel_y, pixel_x)
 
 if __name__ == '__main__':
 
-
-    test_main()
+    main()
