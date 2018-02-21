@@ -14,7 +14,7 @@ class Collector():
         raise NotImplementedError()
 
 
-class VoronoiCollector(Reader):
+class VoronoiCollector(Collector):
 
     def __init__(self, LEDs, num_neighbors=1):
 
