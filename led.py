@@ -1,6 +1,6 @@
 class LED():
 
-    def __init__(self, number, y, x, screen_height, screen_width):
+    def __init__(self, number, y, x, screen_height, screen_width, red=0, green=0, blue=0):
         """
 
         Arguments
@@ -14,6 +14,9 @@ class LED():
                 LED vertical and horizontal position in millimeters.
                 Origin is at the top-left corner of the monitor.
 
+        red, green, blue:   int
+                            An optional attribute to store the color state of the LED.
+
         screen_height, screen_width:    float
                                         Screen height and width in millimeters.
         """
@@ -22,6 +25,9 @@ class LED():
         self.x = x
         self.screen_height = screen_height
         self.screen_width = screen_width
+        self.red = red
+        self.green = green
+        self.blue = blue
 
     @property
     def coordinates(self):
@@ -36,3 +42,7 @@ class LED():
         pixel_x = int(x_pixels * (self.x / self.screen_width))
 
         return (pixel_y, pixel_x)
+
+    @property
+    def color(self):
+        return (self.red, self.green, self.blue)
