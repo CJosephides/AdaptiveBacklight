@@ -45,13 +45,13 @@ class WS281xController(Controller):
     LED_CHANNEL = 0
     LED_STRIP = ws.WS2811_STRIP_GRB
 
-    def __init__(self, LEDs, WS2812_config):
+    def __init__(self, LEDs, WS281x_config):
 
         # Strip setup.
         self.LEDs = LEDs
         self.num_LEDs = len(self.LEDs)
-        self.strip = Adafruit_NeoPixel(**WS2812_config)
-        strip.begin()
+        self.strip = Adafruit_NeoPixel(**WS281x_config)
+        self.strip.begin()
 
         # Signal setup.
         signal.signal(signal.SIGINT, self.signal_handler)
@@ -60,12 +60,23 @@ class WS281xController(Controller):
 
     def control(self, LED_RGB):
         for led in LED_RGB:
-            strip.setPixelColor(led.number, Color(tuple(LED_RGB[led])))
-            strip.show()
+            red = self.get_color_int(LED_RGB[led][0])
+            green = self.get_color_int(LED_RGB[led][1])
+            blue = self.get_color_int(LED_RGB[led][2])
+            self.strip.setPixelColor(led.number, Color(red, green, blue))
+        self.strip.show()
+
+    @staticmethod
+    def get_color_int(color):
+        if np.isnan(color):
+            return 0
+        else:
+            return int(color)
 
     def signal_handler(self, signal, frame):
-        for led in LED_RGB:
-            strip.setPixelColor(led.number, Color(0, 0, 0))
+        for led in self.LEDs:
+            self.strip.setPixelColor(led.number, Color(0, 0, 0))
+        self.strip.show()
         sys.exit(0)
 
 

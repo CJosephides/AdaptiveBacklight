@@ -18,17 +18,20 @@ SCREEN_WIDTH = 505
 SCREEN_HEIGHT = 290
 
 # (Effective) screen resolution in pixels.
-SCREEN_X_PIXELS = 640
-SCREEN_Y_PIXELS = 360
+SCREEN_X_PIXELS = 64
+SCREEN_Y_PIXELS = 36
 
 # LED numbering and positioning.
 LEDs = []
 
 # Test: place LEDs
-xx = np.linspace(0, SCREEN_WIDTH, 25)
-yy = np.linspace(0, SCREEN_HEIGHT, 15)
+xx = np.linspace(0, SCREEN_WIDTH, 29)
+yy = np.linspace(0, SCREEN_HEIGHT, 16)
 
-LED_positions = [(yy[0], x) for x in xx] + [(yy[-1], x) for x in xx] + [(y, xx[0]) for y in yy[1:-1]] + [(y, xx[-1]) for y in yy[1:-1]]
+# LED_positions = [(yy[0], x) for x in xx] + [(y, xx[-1]) for y in yy[1:-1]] + [(yy[-1], x) for x in xx] + [(y, xx[0]) for y in yy[1:-1]] +
+
+LED_positions = [(yy[-1], x) for x in xx] + [(y, xx[-1]) for y in reversed(yy[1:-1])] + [(yy[0], x) for x in reversed(xx)] + [(y, xx[0]) for y in yy[1:-1]]
+
 
 for i in range(len(LED_positions)):
         LEDs.append(LED(i, LED_positions[i][0], LED_positions[i][1], screen_height=SCREEN_HEIGHT, screen_width=SCREEN_WIDTH))
@@ -37,25 +40,26 @@ for i in range(len(LED_positions)):
 # -------------
 
 READER = HTTPReader
-READER_PARAMS = {'address': 'http://192.168.1.177:8080?width=640&height=360'}
+READER_PARAMS = {'address': 'http://192.168.1.177:8080',
+                 'request_params': {'width': SCREEN_X_PIXELS, 'height': SCREEN_Y_PIXELS}}
 COLLECTOR = VoronoiCollector
-COLLECTOR_PARAMS = {'LEDs': LEDs, 'num_neighbors': 2,
+COLLECTOR_PARAMS = {'LEDs': LEDs, 'num_neighbors': 3,
                     'screen_x_pixels': SCREEN_X_PIXELS, 'screen_y_pixels': SCREEN_Y_PIXELS}
 ANALYZER = MeanAnalyzer
 ANALYZER_PARAMS = {}
 CONTROLLER = WS281xController
-CONTROLLER_PARAMS = {'LEDs': LEDs, 'WS281_config': {
-    'LED_COUNT': len(LEDs),
-    'LED_PIN' : 18,
-    'LED_FREQ_HZ' : 800000,
-    'LED_DMA' : 10,
-    'LED_BRIGHTNESS' : 100,
-    'LED_INVERT' : False,
-    'LED_CHANNEL' : 0,
-    'LED_STRIP' : ws.WS2811_STRIP_GRB
+CONTROLLER_PARAMS = {'LEDs': LEDs, 'WS281x_config': {
+    'num': len(LEDs),
+    'pin': 18,
+    'freq_hz': 800000,
+    'dma': 10,
+    'brightness': 150,
+    'invert': False,
+    'channel': 0,
+    'strip_type': ws.WS2811_STRIP_GRB
     }}
 
-UPDATE_PAUSE = 1  # seconds
+UPDATE_PAUSE = 0  # seconds
 
 # Main loop
 # ---------

@@ -1,4 +1,4 @@
-import urllib
+import requests
 from io import BytesIO
 from scipy.misc import imread
 
@@ -25,12 +25,14 @@ class FileReader(Reader):
 
 class HTTPReader(Reader):
 
-    def __init__(self, address):
+    def __init__(self, address, request_params):
         self.address = address
+        self.request_params = request_params
+        self.session = requests.Session()
         super(HTTPReader, self).__init__()
 
     def read(self):
-        response = urllib.request(self.address)
-        imageData = BytesIO(response.read())
+        response = self.session.get(self.address, params=self.request_params)
+        imageData = BytesIO(response.content)
         image = imread(imageData)
         return image

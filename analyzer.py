@@ -10,7 +10,7 @@ class Analyzer(object):
         raise NotImplementedError()
 
 
-class MedianAnalyzer():
+class MedianAnalyzer(Analyzer):
 
     def __init__(self):
         super(MedianAnalyzer, self).__init__()
@@ -20,7 +20,7 @@ class MedianAnalyzer():
         return { led: np.median(LED_RGB_collection[led], axis=0)  for led in LED_RGB_collection}
 
 
-class MeanAnalyzer():
+class MeanAnalyzer(Analyzer):
 
     def __init__(self):
         super(MeanAnalyzer, self).__init__()
