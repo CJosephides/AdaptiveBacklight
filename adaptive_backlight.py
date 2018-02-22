@@ -53,7 +53,7 @@ CONTROLLER_PARAMS = {'LEDs': LEDs, 'WS281x_config': {
     'pin': 18,
     'freq_hz': 800000,
     'dma': 10,
-    'brightness': 150,
+    'brightness': 250,
     'invert': False,
     'channel': 0,
     'strip_type': ws.WS2811_STRIP_GRB

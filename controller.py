@@ -37,14 +37,6 @@ class MatplotlibController(Controller):
 
 class WS281xController(Controller):
 
-    LED_PIN = 18
-    LED_FREQ_HZ = 800000
-    LED_DMA = 10
-    LED_BRIGHTNESS = 100
-    LED_INVERT = False
-    LED_CHANNEL = 0
-    LED_STRIP = ws.WS2811_STRIP_GRB
-
     def __init__(self, LEDs, WS281x_config):
 
         # Strip setup.
@@ -65,6 +57,7 @@ class WS281xController(Controller):
             blue = self.get_color_int(LED_RGB[led][2])
             self.strip.setPixelColor(led.number, Color(red, green, blue))
         self.strip.show()
+
 
     @staticmethod
     def get_color_int(color):
