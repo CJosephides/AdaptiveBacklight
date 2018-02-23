@@ -39,8 +39,8 @@ class MatplotlibController(Controller):
 class WS281xController(Controller):
 
     # TODO we should be able to define a smooth transition time and calculate these
-    SMOOTH_UPDATE_PAUSE = 10  # milliseconds
-    SMOOTH_UPDATE_ITERATIONS = 100
+    SMOOTH_UPDATE_PAUSE = 0  # milliseconds
+    SMOOTH_UPDATE_ITERATIONS = 25
 
     def __init__(self, LEDs, WS281x_config, update_mode='step'):
 
@@ -49,7 +49,7 @@ class WS281xController(Controller):
         self.num_LEDs = len(self.LEDs)
         self.strip = Adafruit_NeoPixel(**WS281x_config)
         self.strip.begin()
-        self.update_mode = self.set_mode(mode)
+        self.update = self.set_mode(update_mode)
 
         # Signal setup.
         signal.signal(signal.SIGINT, self.signal_handler)
@@ -63,19 +63,17 @@ class WS281xController(Controller):
             return self.smooth
 
     def control(self, LED_RGB):
-        self.update_mode()
+        self.update(LED_RGB)
 
     def step(self, LED_RGB):
         for led in LED_RGB:
             red = LED_RGB[led][0]
             green = LED_RGB[led][1]
             blue = LED_RGB[led][2]
-            self.strip.setPixelColor(led.number, make_color(red, green, blue))
+            self.strip.setPixelColor(led.number, self.make_color(red, green, blue))
         self.strip.show()
 
-
-    @staticmethod
-    def make_color(red, green, blue):
+    def make_color(self, red, green, blue):
         red = self.get_color_int(red)
         green = self.get_color_int(green)
         blue = self.get_color_int(blue)
@@ -83,26 +81,33 @@ class WS281xController(Controller):
 
     def smooth(self, LED_RGB):
 
+        #print("Starting smooth ({})".format(time.time()))
+
         # Get increments for each LED's channels.
         LED_increments = { led: [0, 0, 0] for led in LED_RGB }
         for led in LED_RGB:
-            LED_increments[led][0] = ( LED_RGB[led][0] - led.red   ) / SMOOTH_UPDATE_ITERATIONS
-            LED_increments[led][1] = ( LED_RGB[led][1] - led.green ) / SMOOTH_UPDATE_ITERATIONS
-            LED_increments[led][2] = ( LED_RGB[led][2] - led.blue  ) / SMOOTH_UPDATE_ITERATIONS
+            LED_increments[led][0] = float(( LED_RGB[led][0] - led.red   )) / self.SMOOTH_UPDATE_ITERATIONS
+            LED_increments[led][1] = float(( LED_RGB[led][1] - led.green )) / self.SMOOTH_UPDATE_ITERATIONS
+            LED_increments[led][2] = float(( LED_RGB[led][2] - led.blue  )) / self.SMOOTH_UPDATE_ITERATIONS
+
+        #print("Finished making increments ({})".format(time.time()))
 
         # Do the smooth transition.
-        for i in range(SMOOTH_UPDATE_ITERATIONS):
+        for i in range(self.SMOOTH_UPDATE_ITERATIONS):
+            #print("Starting transition {} ({})".format(i, time.time()))
             for led in LED_RGB:
                 led.red += LED_increments[led][0]
                 led.green += LED_increments[led][1]
                 led.blue += LED_increments[led][2]
 
-                color = make_color(led.red, led.green, led.blue)
+                color = self.make_color(led.red, led.green, led.blue)
                 self.strip.setPixelColor(led.number, color)
             self.strip.show()
+            time.sleep(self.SMOOTH_UPDATE_PAUSE / 1000.)
 
-    @staticmethod
-    def get_color_int(color):
+        #print("Finished transitions ({})".format(time.time()))
+
+    def get_color_int(self, color):
         if np.isnan(color):
             return 0
         else:

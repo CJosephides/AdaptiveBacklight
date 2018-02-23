@@ -43,7 +43,7 @@ READER = HTTPReader
 READER_PARAMS = {'address': 'http://192.168.1.177:8080',
                  'request_params': {'width': SCREEN_X_PIXELS, 'height': SCREEN_Y_PIXELS}}
 COLLECTOR = VoronoiCollector
-COLLECTOR_PARAMS = {'LEDs': LEDs, 'num_neighbors': 3,
+COLLECTOR_PARAMS = {'LEDs': LEDs, 'num_neighbors': 2,
                     'screen_x_pixels': SCREEN_X_PIXELS, 'screen_y_pixels': SCREEN_Y_PIXELS}
 ANALYZER = MeanAnalyzer
 ANALYZER_PARAMS = {}
@@ -57,7 +57,7 @@ CONTROLLER_PARAMS = {'LEDs': LEDs, 'WS281x_config': {
     'invert': False,
     'channel': 0,
     'strip_type': ws.WS2811_STRIP_GRB
-    }}
+    }, 'update_mode': 'smooth'}
 
 UPDATE_PAUSE = 0  # seconds
 
