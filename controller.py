@@ -40,7 +40,7 @@ class WS281xController(Controller):
 
     # TODO we should be able to define a smooth transition time and calculate these
     SMOOTH_UPDATE_PAUSE = 0  # milliseconds
-    SMOOTH_UPDATE_ITERATIONS = 25
+    SMOOTH_UPDATE_ITERATIONS = 20
 
     def __init__(self, LEDs, WS281x_config, update_mode='step'):
 
@@ -67,21 +67,11 @@ class WS281xController(Controller):
 
     def step(self, LED_RGB):
         for led in LED_RGB:
-            red = LED_RGB[led][0]
-            green = LED_RGB[led][1]
-            blue = LED_RGB[led][2]
-            self.strip.setPixelColor(led.number, self.make_color(red, green, blue))
+            self.strip.setPixelColor(led.number,
+                                     self.make_color(LED_RGB[led][0], LED_RGB[led][1], LED_RGB[led][2]))
         self.strip.show()
 
-    def make_color(self, red, green, blue):
-        red = self.get_color_int(red)
-        green = self.get_color_int(green)
-        blue = self.get_color_int(blue)
-        return Color(red, green, blue)
-
     def smooth(self, LED_RGB):
-
-        #print("Starting smooth ({})".format(time.time()))
 
         # Get increments for each LED's channels.
         LED_increments = { led: [0, 0, 0] for led in LED_RGB }
@@ -90,28 +80,27 @@ class WS281xController(Controller):
             LED_increments[led][1] = float(( LED_RGB[led][1] - led.green )) / self.SMOOTH_UPDATE_ITERATIONS
             LED_increments[led][2] = float(( LED_RGB[led][2] - led.blue  )) / self.SMOOTH_UPDATE_ITERATIONS
 
-        #print("Finished making increments ({})".format(time.time()))
-
         # Do the smooth transition.
         for i in range(self.SMOOTH_UPDATE_ITERATIONS):
-            #print("Starting transition {} ({})".format(i, time.time()))
             for led in LED_RGB:
+                # TODO could turn the color updates into a method
                 led.red += LED_increments[led][0]
                 led.green += LED_increments[led][1]
                 led.blue += LED_increments[led][2]
-
                 color = self.make_color(led.red, led.green, led.blue)
+                
                 self.strip.setPixelColor(led.number, color)
             self.strip.show()
             time.sleep(self.SMOOTH_UPDATE_PAUSE / 1000.)
-
-        #print("Finished transitions ({})".format(time.time()))
 
     def get_color_int(self, color):
         if np.isnan(color):
             return 0
         else:
-            return int(color)
+            return int(max(0, color))
+
+    def make_color(self, red, green, blue):
+        return Color(self.get_color_int(red), self.get_color_int(green), self.get_color_int(blue))
 
     def signal_handler(self, signal, frame):
         for led in self.LEDs:
