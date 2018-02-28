@@ -88,8 +88,9 @@ class WS281xController(Controller):
                 led.green += LED_increments[led][1]
                 led.blue += LED_increments[led][2]
                 color = self.make_color(led.red, led.green, led.blue)
-                
+
                 self.strip.setPixelColor(led.number, color)
+
             self.strip.show()
             time.sleep(self.SMOOTH_UPDATE_PAUSE / 1000.)
 
