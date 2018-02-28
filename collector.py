@@ -4,12 +4,22 @@ from scipy.spatial import KDTree
 
 class Collector(object):
 
+    # TODO Collector should accept LEDs argument, since we need it everywhere.
     def __init__(self, screen_y_pixels, screen_x_pixels):
         self.screen_y_pixels = screen_y_pixels
         self.screen_x_pixels = screen_x_pixels
 
     def collect(self, image):
         raise NotImplementedError()
+
+
+class StaticCollector(Collector):
+
+    def __init__(self, LEDs):
+        self.LEDs = LEDs
+
+    def collect(self, image):
+        return { led: np.array(image).reshape(1,3) for led in self.LEDs }
 
 
 class VoronoiCollector(Collector):

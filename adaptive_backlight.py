@@ -1,8 +1,8 @@
 import time
 import numpy as np
 from led import LED
-from reader import HTTPReader
-from collector import VoronoiCollector
+from reader import HTTPReader, StaticColorReader
+from collector import VoronoiCollector, StaticCollector
 from analyzer import MedianAnalyzer, MeanAnalyzer
 from controller import WS281xController
 #from controller import MatplotlibController
@@ -39,12 +39,34 @@ for i in range(len(LED_positions)):
 # Configuration
 # -------------
 
-READER = HTTPReader
-READER_PARAMS = {'address': 'http://192.168.1.177:8080',
-                 'request_params': {'width': SCREEN_X_PIXELS, 'height': SCREEN_Y_PIXELS}}
-COLLECTOR = VoronoiCollector
-COLLECTOR_PARAMS = {'LEDs': LEDs, 'num_neighbors': 2,
-                    'screen_x_pixels': SCREEN_X_PIXELS, 'screen_y_pixels': SCREEN_Y_PIXELS}
+## Adaptive, smoothed
+#READER = HTTPReader
+#READER_PARAMS = {'address': 'http://192.168.1.177:8080',
+#                 'request_params': {'width': SCREEN_X_PIXELS, 'height': SCREEN_Y_PIXELS}}
+#COLLECTOR = VoronoiCollector
+#COLLECTOR_PARAMS = {'LEDs': LEDs, 'num_neighbors': 2,
+#                    'screen_x_pixels': SCREEN_X_PIXELS, 'screen_y_pixels': SCREEN_Y_PIXELS}
+#ANALYZER = MeanAnalyzer
+#ANALYZER_PARAMS = {}
+#CONTROLLER = WS281xController
+#CONTROLLER_PARAMS = {'LEDs': LEDs, 'WS281x_config': {
+#    'num': len(LEDs),
+#    'pin': 18,
+#    'freq_hz': 800000,
+#    'dma': 10,
+#    'brightness': 250,
+#    'invert': False,
+#    'channel': 0,
+#    'strip_type': ws.WS2811_STRIP_GRB
+#    }, 'update_mode': 'smooth'}
+#
+#UPDATE_PAUSE = 0  # seconds
+
+# Static color
+READER = StaticColorReader
+READER_PARAMS = {'rgbColor': (244, 179, 66)}
+COLLECTOR = StaticCollector
+COLLECTOR_PARAMS = { 'LEDs': LEDs }
 ANALYZER = MeanAnalyzer
 ANALYZER_PARAMS = {}
 CONTROLLER = WS281xController
@@ -57,9 +79,10 @@ CONTROLLER_PARAMS = {'LEDs': LEDs, 'WS281x_config': {
     'invert': False,
     'channel': 0,
     'strip_type': ws.WS2811_STRIP_GRB
-    }, 'update_mode': 'smooth'}
+    }, 'update_mode': 'step'}
 
-UPDATE_PAUSE = 0  # seconds
+UPDATE_PAUSE = 10  # seconds
+
 
 # Main loop
 # ---------
@@ -75,8 +98,11 @@ def main():
     print("Running. Ctrl+C to terminate.")
     while True:
         image = reader.read()
+        #print(image)
         LED_RGB_collection = collector.collect(image)
+        #print(LED_RGB_collection)
         LED_RGB = analyzer.analyze(LED_RGB_collection)
+        #print(LED_RGB)
         controller.control(LED_RGB)
         time.sleep(UPDATE_PAUSE)
 

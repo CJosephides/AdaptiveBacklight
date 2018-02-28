@@ -36,3 +36,14 @@ class HTTPReader(Reader):
         imageData = BytesIO(response.content)
         image = imread(imageData)
         return image
+
+
+class StaticColorReader(Reader):
+
+    def __init__(self, rgbColor):
+        self.rgbColor = rgbColor
+        super(StaticColorReader, self).__init__()
+
+    def read(self):
+        return list(self.rgbColor)
+
