@@ -30,13 +30,15 @@ The `Reader` reads image data from a variety of sources and must return an $M\ti
 
 ### Collector
 
-The `Collector` groups RGB data and distributes it to the LEDs. For example, it may assign RGB data from the top-left corner of the screen to the top-most and left-most LED behind the monitor. There are many ways to decide how to partition the image data to the LEDs. A good, but slow, implementation (`VoronoiCollector`) takes advantage of Voronoi cells to segment the screen using the physical positions of the LEDs. Briefly, each pixel on the screen gets assigned to the $k$ nearest LEDs. Higher values of $k$ increase mixing of the on-screen colors; $k=1$ assigns each pixel to exactly one LED, leading to the sharpest differences in LED colors.
+The `Collector` groups RGB data and distributes it to the LEDs. For example, it may assign RGB data from the top-left corner of the screen to the top-most and left-most LED behind the monitor. There are many ways to decide how to partition the image data to the LEDs.
+
+A pleasant, but slow, implementation (`VoronoiCollector`) takes advantage of Voronoi cells to segment the screen using the physical positions of the LEDs. Briefly, each pixel on the screen gets assigned to the $k$ nearest LEDs. Higher values of $k$ increase mixing of the on-screen colors; $k=1$ assigns each pixel to exactly one LED, leading to the sharpest differences in LED colors.
 
 The `Collector` returns a dictionary of RGB value arrays.
 
 ### Analyzer
 
-The `Analyzer` decides what each LED should do with its distribution of RGB values. It outputsTwo examples are:
+The `Analyzer` decides what each LED should do with its distribution of RGB values. Two simple examples are:
 
 * MeanAnalyzer: takes the mean of over all RGB values for each color channel.
 * MedianAnalyzer: takes the median value over all RGB values for each color channel.
